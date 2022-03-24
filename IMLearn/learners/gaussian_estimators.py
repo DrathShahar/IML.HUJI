@@ -157,8 +157,8 @@ class MultivariateGaussian:
         Sets `self.mu_`, `self.cov_` attributes according to calculated estimation.
         Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
-
+        self.mu_ = np.mean(X, axis=0)
+        self.cov_ = np.cov(X.T)
         self.fitted_ = True
         return self
 
@@ -203,4 +203,12 @@ class MultivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        raise NotImplementedError()
+        def calc_loglikelihood(residuals):
+            return -0.5 * (np.log(np.linalg.det(cov)) + residuals.T.dot(np.linalg.inv(cov)).dot(residuals) + 2 * np.log(2 * np.pi))
+
+        residuals = (X - mu)
+
+        loglikelihood = np.apply_along_axis(calc_loglikelihood, 1, residuals)
+        loglikelihoodsum = loglikelihood.sum()
+
+        return loglikelihoodsum

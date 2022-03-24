@@ -56,16 +56,49 @@ def test_univariate_gaussian():
 
 def test_multivariate_gaussian():
     # Question 4 - Draw samples and print fitted model
-    raise NotImplementedError()
+    mu = np.array([0, 0, 4, 0])
+    cov = np.matrix('1 0.2 0 0.5; 0.2 2 0 0; 0 0 1 0; 0.5 0 0 1')
+    samples = np.random.multivariate_normal(mu, cov, 1000)
+    # draw samples
+    # fit
+    estimator = MultivariateGaussian()
+    estimator.fit(samples)
+    # print estimations
+    print(estimator.mu_)
+    print(estimator.cov_)
+
+
 
     # Question 5 - Likelihood evaluation
-    raise NotImplementedError()
-
+    l = 200
+    f1 = np.linspace(-10, 10, l)
+    f3 = np.linspace(-10, 10, l)
+    comb = np.array([np.repeat(f1, l), np.tile(f3, l)])
+    comb_mat = comb.T.reshape((l, l, 2))
+    liklihood_mat = np.zeros((l, l))
+    for i in range(l):
+        for j in range(l):
+            cur_f1 = comb_mat[i][j][0]
+            cur_f3 = comb_mat[i][j][1]
+            cur_mu = [cur_f1, 0, cur_f3, 0]
+            cur_likelihood = estimator.log_likelihood(cur_mu, cov, samples)
+            liklihood_mat[i][j] = cur_likelihood
+    fig = px.imshow(liklihood_mat)
+    fig.update_layout(title_text = "Log-likelihood as a function of f1 and f3")
+    fig.update_xaxes(title_text="f3")
+    fig.update_yaxes(title_text="f1")
+    fig.show()
+    
     # Question 6 - Maximum likelihood
-    raise NotImplementedError()
+    argmax = liklihood_mat.argmax()
+    i = argmax // l
+    j = argmax % l
+    argmax_f1 = f1[i]
+    argmax_f3 = f3[j]
+    print(argmax_f1, argmax_f3)
 
 
 if __name__ == '__main__':
     np.random.seed(0)
     test_univariate_gaussian()
-    # test_multivariate_gaussian()
+    test_multivariate_gaussian()
