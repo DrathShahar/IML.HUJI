@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Callable
 from typing import NoReturn
+
+from torch import true_divide
 from ...base import BaseEstimator
 import numpy as np
 
@@ -90,7 +92,24 @@ class Perceptron(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.fit_intercept_`
         """
-        raise NotImplementedError()
+        self.coefs_ = np.zeros(X.shape[1])
+        for t in range(self.max_iter_):
+            mis_classified = False
+            mis_classified_idx = 0
+            for i, x in enumerate(X):
+                if np.inner(self.coefs_, x) <= 0:
+                    mis_classified = True
+                    mis_classified_idx = i
+                    break
+            if mis_classified:
+                self.coefs_ = self.coefs_ + y[mis_classified_idx] * X[mis_classified_idx]
+                self.callback_(self, X, y)
+            else:
+                break
+        self.fitted_ = True
+        return self.coefs_
+
+
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -106,7 +125,11 @@ class Perceptron(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        responses = np.zeros(X.shape[0])
+        for i, x in enumerate(X):
+            inner = np.inner(self.coefs_, x)
+            responses[i] = np.array([1]) if (np.inner(self.coefs_, x) > 0) else np.array([-1])
+        return responses
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -125,4 +148,14 @@ class Perceptron(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        raise NotImplementedError()
+        y_pred = self._predict(X)
+        compare = []
+        for i, pred in enumerate(y_pred):
+            compare.append(1 if pred == y[i][0] else 0)
+        count = sum(compare)
+        return count / len(compare)
+
+# p = Perceptron()
+# x = np.array([[1, -2], [3, -1], [-2, -2]])
+# y = np.array([1, 1, -1])
+# p.fit(x, y)

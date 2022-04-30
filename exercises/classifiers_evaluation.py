@@ -1,3 +1,6 @@
+import sys
+from turtle import title
+sys.path.append('/Users/Shahar/IML.HUJI')
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
 import numpy as np
 from typing import Tuple
@@ -26,7 +29,11 @@ def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
         Class vector specifying for each sample its class
 
     """
-    raise NotImplementedError()
+    base_path = '/Users/Shahar/IML.HUJI/datasets/'
+    data = np.array(np.load(base_path + filename))
+    X = data[:, [0, 1]]
+    y = data[:, [2]]
+    return X, y
 
 
 def run_perceptron():
@@ -38,14 +45,31 @@ def run_perceptron():
     """
     for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
-        raise NotImplementedError()
+        X, y = load_dataset(f)
 
         # Fit Perceptron and record loss in each fit iteration
         losses = []
-        raise NotImplementedError()
+        
+        def callback_function(obj, samples, answers):
+            loss = obj._loss(samples, answers)
+            losses.append(loss)
 
+        perceptron = Perceptron(callback=callback_function)
+        perceptron._fit(X, y)
+        
         # Plot figure
-        raise NotImplementedError()
+        fig = make_subplots(rows=1, cols=1, subplot_titles=["losses of %s data over iterations" % (n)])
+        iterations = np.arange(start=1, stop=len(losses)+1, step=1)
+
+        fig.add_trace(
+            go.Scatter(x=iterations, y=losses),
+            row=1, col=1
+        )
+
+        fig.update_layout(height=600, width=800)\
+            .update_xaxes(title_text="iterations", row=1, col=1)\
+            .update_yaxes(title_text="loss", row=1, col=1)
+        fig.show()
 
 
 def compare_gaussian_classifiers():
@@ -68,4 +92,4 @@ def compare_gaussian_classifiers():
 if __name__ == '__main__':
     np.random.seed(0)
     run_perceptron()
-    compare_gaussian_classifiers()
+    # compare_gaussian_classifiers()
