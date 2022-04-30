@@ -94,18 +94,10 @@ class Perceptron(BaseEstimator):
         """
         self.coefs_ = np.zeros(X.shape[1])
         for t in range(self.max_iter_):
-            mis_classified = False
-            mis_classified_idx = 0
             for i, x in enumerate(X):
-                if np.inner(self.coefs_, x) <= 0:
-                    mis_classified = True
-                    mis_classified_idx = i
-                    break
-            if mis_classified:
-                self.coefs_ = self.coefs_ + y[mis_classified_idx] * X[mis_classified_idx]
-                self.callback_(self, X, y)
-            else:
-                break
+                if np.inner(self.coefs_, x) * y[i] <= 0:
+                    self.coefs_ = self.coefs_ + y[i] * x
+            self.callback_(self, X, y)
         self.fitted_ = True
         return self.coefs_
 
@@ -152,10 +144,5 @@ class Perceptron(BaseEstimator):
         compare = []
         for i, pred in enumerate(y_pred):
             compare.append(1 if pred == y[i][0] else 0)
-        count = sum(compare)
-        return count / len(compare)
-
-# p = Perceptron()
-# x = np.array([[1, -2], [3, -1], [-2, -2]])
-# y = np.array([1, 1, -1])
-# p.fit(x, y)
+        count_loss = len(compare) - sum(compare)
+        return count_loss / len(compare)

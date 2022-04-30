@@ -36,11 +36,11 @@ def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray, normalize: b
     -------
     Misclassification of given predictions
     """
-    compare = y_true == y_pred
-    count = sum(compare)
-    if normalize:
-        return count / len(compare)
-    return compare
+    compare = []
+    for i, pred in enumerate(y_pred):
+        compare.append(1 if pred == y_true[i] else 0)
+    count_loss = len(compare) - sum(compare)
+    return count_loss / len(compare)
 
 
 def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
